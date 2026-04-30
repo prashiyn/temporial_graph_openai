@@ -1,0 +1,866 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Temporal Graph RAG",
+    "description": "Neo4j-backed temporal graph ingestion and retrieval (doc-processing LLM proxy).",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/ingest/jobs": {
+      "post": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Create Ingest Job",
+        "operationId": "create_ingest_job_v1_ingest_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestJobCreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Document already exists in a different collection",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Document (DOC123, 2025-01-01) already belongs to collection 'a', cannot ingest into 'b'"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ingest/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Get Ingest Job",
+        "operationId": "get_ingest_job_v1_ingest_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestJobStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ingest/jobs/{job_id}/stream": {
+      "get": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Ingest Job Stream",
+        "operationId": "ingest_job_stream_v1_ingest_jobs__job_id__stream_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ontologies": {
+      "get": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Ontologies",
+        "operationId": "ontologies_v1_ontologies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Ontologies V1 Ontologies Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/retrieve": {
+      "post": {
+        "tags": [
+          "retrieve"
+        ],
+        "summary": "Retrieve",
+        "operationId": "retrieve_v1_retrieve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetrievalQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/retrieve/agent": {
+      "post": {
+        "tags": [
+          "retrieve"
+        ],
+        "summary": "Retrieve Multi Hop",
+        "description": "Lightweight multi-hop: iterative neighborhood expansion + synthesis (v1).",
+        "operationId": "retrieve_multi_hop_v1_retrieve_agent_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetrievalQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/collections": {
+      "post": {
+        "tags": [
+          "collections"
+        ],
+        "summary": "Upsert Collection",
+        "description": "Get or create a collection by id (and update name/description).",
+        "operationId": "upsert_collection_v1_collections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionUpsertRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/collections/{collection_id}": {
+      "get": {
+        "tags": [
+          "collections"
+        ],
+        "summary": "Get Collection",
+        "description": "Return collection metadata and document/chunk/event counts.",
+        "operationId": "get_collection_v1_collections__collection_id__get",
+        "parameters": [
+          {
+            "name": "collection_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Collection Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CollectionDetailResponse": {
+        "properties": {
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "document_count": {
+            "type": "integer",
+            "title": "Document Count",
+            "default": 0
+          },
+          "chunk_count": {
+            "type": "integer",
+            "title": "Chunk Count",
+            "default": 0
+          },
+          "statement_event_count": {
+            "type": "integer",
+            "title": "Statement Event Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "collection_id",
+          "name",
+          "description"
+        ],
+        "title": "CollectionDetailResponse",
+        "description": "Collection plus aggregate counts for documents attached under this partition."
+      },
+      "CollectionResponse": {
+        "properties": {
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "created": {
+            "type": "boolean",
+            "title": "Created",
+            "description": "True if this request created the node (best-effort; see implementation)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "collection_id",
+          "name",
+          "description"
+        ],
+        "title": "CollectionResponse",
+        "description": "Collection metadata after upsert."
+      },
+      "CollectionUpsertRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name",
+            "description": "Human-readable collection title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Optional operator notes",
+            "default": ""
+          },
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id",
+            "description": "Stable slug; leave empty to derive from name (slugify)",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CollectionUpsertRequest",
+        "description": "Get-or-create body: pass name plus optional collection_id (if omitted, id is derived from name)."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IngestChunkItem": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id",
+            "description": "Stable chunk identifier"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Chunk text, table, or image description"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "One of text, table, image"
+          },
+          "doc_id": {
+            "type": "string",
+            "title": "Doc Id",
+            "description": "Document id"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page",
+            "description": "Source page when available"
+          },
+          "bundle_id": {
+            "type": "string",
+            "title": "Bundle Id",
+            "description": "Semantic bundle id"
+          },
+          "section_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Title",
+            "description": "Nearest section heading"
+          },
+          "title_summary": {
+            "type": "string",
+            "title": "Title Summary",
+            "description": "LLM section summary",
+            "default": ""
+          },
+          "publish_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Date",
+            "description": "Document publish date if provided"
+          },
+          "prev_chunk": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prev Chunk",
+            "description": "Previous chunk id"
+          },
+          "next_chunk": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Chunk",
+            "description": "Next chunk id"
+          },
+          "canonical_event": {
+            "type": "string",
+            "title": "Canonical Event",
+            "description": "Ontology level-1 event"
+          },
+          "canonical_subevent": {
+            "type": "string",
+            "title": "Canonical Subevent",
+            "description": "Ontology level-2 subevent"
+          },
+          "normalized_subtype": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalized Subtype",
+            "description": "Level-3 subtype; derived server-side if omitted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "content",
+          "type",
+          "doc_id",
+          "bundle_id",
+          "canonical_event",
+          "canonical_subevent"
+        ],
+        "title": "IngestChunkItem"
+      },
+      "IngestJobCreateResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "state": {
+            "$ref": "#/components/schemas/JobState",
+            "default": "pending"
+          },
+          "poll_url": {
+            "type": "string",
+            "title": "Poll Url"
+          },
+          "sse_url": {
+            "type": "string",
+            "title": "Sse Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "poll_url",
+          "sse_url"
+        ],
+        "title": "IngestJobCreateResponse"
+      },
+      "IngestJobStatus": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "state": {
+            "$ref": "#/components/schemas/JobState"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "result_summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "state",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "IngestJobStatus"
+      },
+      "IngestPayload": {
+        "properties": {
+          "ontology_id": {
+            "type": "string",
+            "title": "Ontology Id",
+            "description": "Ontology file id (e.g. company_data)"
+          },
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id",
+            "description": "Graph partition id (required). Documents/chunks/events are ingested in this collection context"
+          },
+          "chunks": {
+            "items": {
+              "$ref": "#/components/schemas/IngestChunkItem"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Chunks"
+          },
+          "webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Url",
+            "description": "POST JSON job status on completion (optional)"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ontology_id",
+          "collection_id",
+          "chunks"
+        ],
+        "title": "IngestPayload",
+        "description": "Batch ingest: all chunks must share the same doc_id + publish_date grouping key."
+      },
+      "JobState": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "completed",
+          "failed"
+        ],
+        "title": "JobState"
+      },
+      "RetrievalQuery": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "Natural language question for multi-hop agent"
+          },
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id",
+            "description": "Required collection partition id"
+          },
+          "doc_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Id",
+            "description": "Restrict context to a document"
+          },
+          "publish_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Date",
+            "description": "ISO date string matching Document.publish_date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "collection_id"
+        ],
+        "title": "RetrievalQuery"
+      },
+      "RetrievalResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "tool_trace": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Tool Trace"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "RetrievalResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

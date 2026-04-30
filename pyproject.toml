@@ -1,0 +1,43 @@
+[project]
+name = "temporal-graph-openai"
+version = "0.1.0"
+description = "Temporal graph RAG: FastAPI, Neo4j, doc-processing LLM proxy, configurable ontologies"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "httpx>=0.28.0",
+    "neo4j>=5.27.0",
+    "pyyaml>=6.0.2",
+    "tenacity>=9.0.0",
+    "rapidfuzz>=3.11.0",
+    "sse-starlette>=2.1.0",
+    "python-dotenv>=1.0.1",
+    "openai>=1.59.0",
+    "numpy>=2.0.0",
+    "redis[hiredis]>=5.2.0",
+    "jsonschema>=4.23.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.24.0", "ruff>=0.8.0"]
+
+[project.scripts]
+tg-validate-ontology = "temporal_graph.ontology.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.26.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["temporal_graph"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

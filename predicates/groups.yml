@@ -1,0 +1,8 @@
+# Predicate groups for invalidation candidate expansion (notebook PREDICATE_GROUPS).
+# Ontology JSON may override with top-level "predicate_groups": [[...], ...]
+
+groups:
+  - ["IS_A", "HAS_A", "LOCATED_IN", "HOLDS_ROLE", "PART_OF"]
+  - ["PRODUCES", "SELLS", "SUPPLIES", "DISCONTINUED", "SECURED"]
+  - ["LAUNCHED", "DEVELOPED", "ADOPTED_BY", "INVESTS_IN", "COLLABORATES_WITH"]
+  - ["HAS_REVENUE", "INCREASED", "DECREASED", "RESULTED_IN", "TARGETS"]

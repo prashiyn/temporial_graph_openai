@@ -1,0 +1,1521 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "doc-processing",
+    "description": "Document processing, conversion to markdown, chunking for RAG, and LLM completions.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness",
+        "description": "Simple liveness check. Returns 200 when the service is up.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness",
+        "description": "Readiness check. Use for k8s/load-balancer probes.",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Ready Health Ready Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/convert-ms-docs": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Convert Ms Docs",
+        "description": "Convert a Microsoft Office document (Word/Excel/PowerPoint) to markdown from file upload or URL.",
+        "operationId": "convert_ms_docs_documents_convert_ms_docs_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_convert_ms_docs_documents_convert_ms_docs_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvertResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/process-using-unstructured": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Process Using Unstructured",
+        "description": "Process a PDF or image using Unstructured: extract tables, images, and metadata.\n\nAccepts either an uploaded file or a URL.",
+        "operationId": "process_using_unstructured_documents_process_using_unstructured_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          },
+          {
+            "name": "file_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pdf",
+                    "image",
+                    "markdown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "File Type"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_process_using_unstructured_documents_process_using_unstructured_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessFromUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/pdf-to-markdown": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Pdf To Markdown Endpoint",
+        "description": "Convert a PDF to markdown using Docling (easyocr or vlm backend) from file upload or URL.",
+        "operationId": "pdf_to_markdown_endpoint_documents_pdf_to_markdown_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          },
+          {
+            "name": "backend",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "easyocr",
+                "vlm"
+              ],
+              "type": "string",
+              "default": "easyocr",
+              "title": "Backend"
+            }
+          },
+          {
+            "name": "merge_tables",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Merge Tables"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_pdf_to_markdown_endpoint_documents_pdf_to_markdown_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfToMarkdownResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/xbrl-to-markdown": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Xbrl To Markdown Endpoint",
+        "description": "Convert an XBRL instance document (.xml/.xbrl) to markdown using Docling's XBRL backend from file or URL.",
+        "operationId": "xbrl_to_markdown_endpoint_documents_xbrl_to_markdown_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_xbrl_to_markdown_endpoint_documents_xbrl_to_markdown_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/XbrlToMarkdownResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/process-using-deepseek": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Process Using Deepseek",
+        "description": "Convert a PDF or image to markdown using DeepSeek-OCR via Ollama.\n\nAccepts either an uploaded file or a URL. Only PDF and common image types are supported.",
+        "operationId": "process_using_deepseek_documents_process_using_deepseek_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_process_using_deepseek_documents_process_using_deepseek_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfToMarkdownResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/process-using-glm": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Process Using Glm",
+        "description": "Convert a PDF or image to markdown using GLM-OCR via Ollama.\n\nAccepts either an uploaded file or a URL. Only PDF and common image types are supported.",
+        "operationId": "process_using_glm_documents_process_using_glm_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_process_using_glm_documents_process_using_glm_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfToMarkdownResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/chunk": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Chunk Document",
+        "description": "Chunk a document using the Financial Filings Pipeline (FFP).\n\nAccepts **PDF**, **Markdown**, **HTML** (including `.xhtml`), or **XBRL** (`.xml` / `.xbrl`).\nXBRL is converted to markdown first, then chunked like markdown.\n\nProvide either `file` (upload) or `url` (fetched to a temp file).",
+        "operationId": "chunk_document_documents_chunk_post",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2083
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Url"
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Stored on each chunk; default is upload filename stem or URL path stem",
+              "title": "Doc Id"
+            },
+            "description": "Stored on each chunk; default is upload filename stem or URL path stem"
+          },
+          {
+            "name": "publish_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional publish date metadata on chunks",
+              "title": "Publish Date"
+            },
+            "description": "Optional publish date metadata on chunks"
+          },
+          {
+            "name": "pdf_backend",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "easyocr",
+                "vlm"
+              ],
+              "type": "string",
+              "description": "Docling backend when the input is PDF",
+              "default": "vlm",
+              "title": "Pdf Backend"
+            },
+            "description": "Docling backend when the input is PDF"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_chunk_document_documents_chunk_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm/complete": {
+      "post": {
+        "tags": [
+          "llm"
+        ],
+        "summary": "Completion",
+        "description": "Get a completion from the configured LLM (with fallback). Used only for document processing.",
+        "operationId": "completion_llm_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm/models": {
+      "get": {
+        "tags": [
+          "llm"
+        ],
+        "summary": "Models",
+        "description": "List default, fallback, and all configured LLM models.",
+        "operationId": "models_llm_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm/embeddings": {
+      "post": {
+        "tags": [
+          "llm"
+        ],
+        "summary": "Embeddings",
+        "description": "Generate embeddings for text/image inputs via LiteLLM or direct Ollama fallback.",
+        "operationId": "embeddings_llm_embeddings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmbeddingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_chunk_document_documents_chunk_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_chunk_document_documents_chunk_post"
+      },
+      "Body_convert_ms_docs_documents_convert_ms_docs_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_convert_ms_docs_documents_convert_ms_docs_post"
+      },
+      "Body_pdf_to_markdown_endpoint_documents_pdf_to_markdown_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_pdf_to_markdown_endpoint_documents_pdf_to_markdown_post"
+      },
+      "Body_process_using_deepseek_documents_process_using_deepseek_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_process_using_deepseek_documents_process_using_deepseek_post"
+      },
+      "Body_process_using_glm_documents_process_using_glm_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_process_using_glm_documents_process_using_glm_post"
+      },
+      "Body_process_using_unstructured_documents_process_using_unstructured_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_process_using_unstructured_documents_process_using_unstructured_post"
+      },
+      "Body_xbrl_to_markdown_endpoint_documents_xbrl_to_markdown_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_xbrl_to_markdown_endpoint_documents_xbrl_to_markdown_post"
+      },
+      "ChunkItem": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id",
+            "description": "Stable chunk identifier"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Chunk text, table, or image description"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "One of text, table, image"
+          },
+          "doc_id": {
+            "type": "string",
+            "title": "Doc Id",
+            "description": "Document id"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page",
+            "description": "Source page when available"
+          },
+          "bundle_id": {
+            "type": "string",
+            "title": "Bundle Id",
+            "description": "Semantic bundle id"
+          },
+          "section_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Title",
+            "description": "Nearest section heading"
+          },
+          "title_summary": {
+            "type": "string",
+            "title": "Title Summary",
+            "description": "LLM section summary",
+            "default": ""
+          },
+          "publish_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Date",
+            "description": "Document publish date if provided"
+          },
+          "prev_chunk": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prev Chunk",
+            "description": "Previous chunk id"
+          },
+          "next_chunk": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Chunk",
+            "description": "Next chunk id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "content",
+          "type",
+          "doc_id",
+          "bundle_id"
+        ],
+        "title": "ChunkItem",
+        "description": "One FFP chunk (same fields as `doc_processing.ffp.pipeline.Chunk`)."
+      },
+      "ChunkResponse": {
+        "properties": {
+          "chunks": {
+            "items": {
+              "$ref": "#/components/schemas/ChunkItem"
+            },
+            "type": "array",
+            "title": "Chunks",
+            "description": "Structured chunks from FinancialFilingsPipeline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunks"
+        ],
+        "title": "ChunkResponse",
+        "description": "FFP pipeline chunks for RAG."
+      },
+      "CompletionRequest": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider alias: groq, ollama, openai, anthropic, tencent"
+          },
+          "messages": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Messages",
+            "description": "Chat messages, e.g. [{\"role\": \"user\", \"content\": \"...\"}]"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Override default model (LiteLLM model string)"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort",
+            "description": "Optional reasoning level for models that support reasoning. Allowed values: low, medium, high."
+          },
+          "response_format": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseFormatJsonObject"
+              },
+              {
+                "$ref": "#/components/schemas/ResponseFormatJsonSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Format",
+            "description": "Optional structured output request (LiteLLM/OpenAI response_format). Example: {\"type\": \"json_object\"} or {\"type\": \"json_schema\", \"json_schema\": {\"name\": \"...\", \"schema\": {...}, \"strict\": true}}."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "messages"
+        ],
+        "title": "CompletionRequest",
+        "description": "Request for LLM completion (LiteLLM)."
+      },
+      "CompletionResponse": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Assistant reply text"
+          },
+          "parsed": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parsed",
+            "description": "If response_format was used and content is valid JSON, this contains parsed JSON."
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "CompletionResponse",
+        "description": "LLM completion content."
+      },
+      "ConvertResponse": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "title": "Markdown",
+            "description": "Converted markdown content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown"
+        ],
+        "title": "ConvertResponse",
+        "description": "Result of document-to-markdown conversion."
+      },
+      "EmbeddingDataItem": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "title": "Object",
+            "description": "Usually 'embedding'."
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "Index of this embedding in the request."
+          },
+          "embedding": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Embedding",
+            "description": "Embedding vector (float list) or base64 string depending on encoding."
+          }
+        },
+        "type": "object",
+        "required": [
+          "object",
+          "index",
+          "embedding"
+        ],
+        "title": "EmbeddingDataItem",
+        "description": "One embedding vector item."
+      },
+      "EmbeddingRequest": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider alias: openai, ollama, vertex_ai, etc."
+          },
+          "input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Input",
+            "description": "Input text or list of inputs. For image embeddings on supported models, pass base64 data URI strings."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Override embedding model (LiteLLM model string, e.g. openai/text-embedding-3-small)."
+          },
+          "encoding_format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "float",
+                  "base64"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encoding Format",
+            "description": "Optional embedding encoding format."
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions",
+            "description": "Optional output dimensions for models that support it."
+          },
+          "input_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Type",
+            "description": "Optional provider-specific input type (e.g. search_document, query, image)."
+          },
+          "user": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User",
+            "description": "Optional end-user identifier."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "input"
+        ],
+        "title": "EmbeddingRequest",
+        "description": "Request for embedding generation (text/image data URIs supported by model/provider)."
+      },
+      "EmbeddingResponse": {
+        "properties": {
+          "object": {
+            "type": "string",
+            "title": "Object",
+            "description": "Usually 'list'."
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model used to generate embeddings."
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddingDataItem"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Embedding vectors."
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage",
+            "description": "Optional token usage stats if provided by backend."
+          }
+        },
+        "type": "object",
+        "required": [
+          "object",
+          "model",
+          "data"
+        ],
+        "title": "EmbeddingResponse",
+        "description": "Embedding response in OpenAI-compatible format."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImageItem": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Element metadata"
+          },
+          "image_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Base64",
+            "description": "Base64-encoded image when in payload"
+          }
+        },
+        "type": "object",
+        "title": "ImageItem",
+        "description": "One extracted image block."
+      },
+      "JsonSchemaPayload": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Schema name"
+          },
+          "schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Schema",
+            "description": "JSON Schema object"
+          },
+          "strict": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strict",
+            "description": "Whether to enforce strict schema adherence when supported."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "schema"
+        ],
+        "title": "JsonSchemaPayload",
+        "description": "Payload for response_format.type=json_schema."
+      },
+      "ModelsResponse": {
+        "properties": {
+          "default_model": {
+            "type": "string",
+            "title": "Default Model",
+            "description": "Default model for completions"
+          },
+          "fallback_model": {
+            "type": "string",
+            "title": "Fallback Model",
+            "description": "Fallback model on failure"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "List of configured model strings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "default_model",
+          "fallback_model",
+          "models"
+        ],
+        "title": "ModelsResponse",
+        "description": "Configured LLM models and defaults."
+      },
+      "PdfToMarkdownResponse": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "title": "Markdown",
+            "description": "Converted markdown content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown"
+        ],
+        "title": "PdfToMarkdownResponse",
+        "description": "Result of PDF-to-markdown conversion."
+      },
+      "ProcessFromUrlResponse": {
+        "properties": {
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/TableItem"
+            },
+            "type": "array",
+            "title": "Tables",
+            "description": "Extracted tables"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageItem"
+            },
+            "type": "array",
+            "title": "Images",
+            "description": "Extracted images"
+          },
+          "extract_output_dir": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extract Output Dir",
+            "description": "Dir path if images saved to disk"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tables",
+          "images"
+        ],
+        "title": "ProcessFromUrlResponse",
+        "description": "Result of process-from-url: tables and images."
+      },
+      "ResponseFormatJsonObject": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "json_object",
+            "title": "Type",
+            "description": "Request valid JSON object output."
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "ResponseFormatJsonObject",
+        "description": "LiteLLM response_format for JSON object output."
+      },
+      "ResponseFormatJsonSchema": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "json_schema",
+            "title": "Type",
+            "description": "Request output matching the provided JSON schema."
+          },
+          "json_schema": {
+            "$ref": "#/components/schemas/JsonSchemaPayload",
+            "description": "Schema descriptor and JSON schema body."
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "json_schema"
+        ],
+        "title": "ResponseFormatJsonSchema",
+        "description": "LiteLLM response_format for JSON schema output."
+      },
+      "TableItem": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Plain-text table content"
+          },
+          "text_as_html": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text As Html",
+            "description": "Table as HTML when available"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Element metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TableItem",
+        "description": "One extracted table."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "XbrlToMarkdownResponse": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "title": "Markdown",
+            "description": "Converted markdown content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown"
+        ],
+        "title": "XbrlToMarkdownResponse",
+        "description": "Result of XBRL-to-markdown conversion."
+      }
+    }
+  }
+}

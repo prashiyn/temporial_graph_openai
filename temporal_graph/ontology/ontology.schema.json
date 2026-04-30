@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:temporal-graph:ontology",
+  "title": "Temporal graph ontology definition",
+  "description": "Validates ontology JSON files loaded from ontologies/{id}.json. Used by temporal_graph.ontology.loader before Pydantic parsing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "event_tree"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema format version for this file (not the ontology vocabulary version).",
+      "pattern": "^[0-9]+$",
+      "default": "1"
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable slug; must match the filename stem (e.g. company_data.json → id \"company_data\"). Used in ingest payloads as ontology_id.",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable ontology title for prompts and metadata."
+    },
+    "ontology_version": {
+      "type": "string",
+      "description": "Version string stored on graph nodes with extractions (e.g. 1.1).",
+      "minLength": 1,
+      "default": "1.0"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional prose for operators and LLM context."
+    },
+    "invalidation": {
+      "$ref": "#/$defs/invalidationConfig"
+    },
+    "predicate_groups": {
+      "description": "Override predicate groups for invalidation expansion; null loads predicates/groups.yml.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          },
+          "minItems": 1
+        }
+      ]
+    },
+    "event_tree": {
+      "type": "object",
+      "description": "Map canonical_event → node with subevents and optional default_normalized_subtype.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Z][A-Z0-9_]*$",
+        "description": "UPPER_SNAKE canonical_event (align with canonical_events.md)."
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/canonicalEventNode"
+      }
+    }
+  },
+  "$defs": {
+    "invalidationConfig": {
+      "type": "object",
+      "description": "Temporal invalidation: embedding similarity gate + publish_date proximity + optional per-subevent hours.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "similarity_threshold": {
+          "type": "number",
+          "description": "Minimum cosine similarity (0–1) for candidate fact pairs before LLM invalidation.",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5
+        },
+        "top_k": {
+          "type": "integer",
+          "description": "Max embedding-similar neighbors considered per fact.",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 10
+        },
+        "default_publish_date_threshold_hours": {
+          "type": "number",
+          "description": "Hours within which document publish dates must fall to allow invalidation; 0 uses env DEFAULT_INVALIDATION_PUBLISH_DATE_THRESHOLD_HOURS.",
+          "minimum": 0,
+          "maximum": 8760,
+          "default": 12
+        },
+        "subevent_publish_date_threshold_hours": {
+          "type": "object",
+          "description": "Per canonical_subevent override (hours). Keys must match subevents under some canonical_event.",
+          "propertyNames": {
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 8760
+          }
+        }
+      }
+    },
+    "canonicalEventNode": {
+      "type": "object",
+      "required": ["subevents"],
+      "additionalProperties": false,
+      "properties": {
+        "subevents": {
+          "description": "List of allowed canonical_subevent strings, or a map of subevent → optional default subtype metadata.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            {
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/subeventDictEntry"
+              }
+            }
+          ]
+        },
+        "default_normalized_subtype": {
+          "type": "string",
+          "description": "Fallback normalized subtype when ingest does not supply one (often equals a primary subevent).",
+          "minLength": 1
+        }
+      }
+    },
+    "subeventDictEntry": {
+      "type": "object",
+      "description": "Metadata for one subevent when subevents is an object. Empty object is valid.",
+      "additionalProperties": false,
+      "properties": {
+        "default_normalized_subtype": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_subtype": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Alias for default_normalized_subtype (either may be read by the loader)."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "id": "company_data",
+  "name": "Financial corporate disclosures",
+  "ontology_version": "1.1",
+  "description": "Canonical event hierarchy for company_data (from canonical_events.md). LLM extractions must map into this vocabulary.",
+  "invalidation": {
+    "enabled": true,
+    "similarity_threshold": 0.5,
+    "top_k": 10,
+    "default_publish_date_threshold_hours": 12,
+    "subevent_publish_date_threshold_hours": {}
+  },
+  "predicate_groups": null,
+  "event_tree": {
+    "EARNINGS_FINANCIALS": {
+      "subevents": ["RESULTS", "EARNINGS", "INVESTOR_MEET", "DELAY", "AUDIT"],
+      "default_normalized_subtype": "RESULTS"
+    },
+    "FUND_RAISE_CAPITAL": {
+      "subevents": ["ALLOTMENT", "ISSUANCE", "RIGHTS_ISSUE", "PREFERENTIAL", "QIP", "DEBENTURES", "REDEMPTION", "FUND_USE", "CREDIT_RATING", "ANNOUNCEMENT"],
+      "default_normalized_subtype": "ANNOUNCEMENT"
+    },
+    "RESTRUCTURING": {
+      "subevents": ["ACQUISITION", "MERGER", "TAKEOVER", "DEMERGER", "SALE", "BUSINESS_SALE", "DIVERSIFY", "NCLT", "EXTINCTION", "LIQUIDATION"],
+      "default_normalized_subtype": "ACQUISITION"
+    },
+    "MANAGEMENT_CHANGE": {
+      "subevents": ["APPOINTMENT", "RESIGN", "RETIRE", "HIRE", "FIRE", "DIRECTOR", "AUDITOR_RESIGN"],
+      "default_normalized_subtype": "APPOINTMENT"
+    },
+    "BOARD_MEETING": {
+      "subevents": ["SHAREHOLDERS_MEETING", "COMMITTEE_MEETING", "EXTRA_ORDINARY_MEETING", "OUTCOME", "INTIMATION"],
+      "default_normalized_subtype": "OUTCOME"
+    },
+    "MARKET_ACTION": {
+      "subevents": ["DIVIDEND", "BUYBACK", "BUYBACK_END", "SPLIT", "BONUS", "RECORD_DATE", "OPEN_OFFER", "DELISTING", "SUSPENSION", "OFS", "ANNOUNCEMENT", "VOLUME", "PRICE_MOVEMENT"],
+      "default_normalized_subtype": "ANNOUNCEMENT"
+    },
+    "BUSINESS_UPDATE": {
+      "subevents": ["CONTRACT_WIN", "CONTRACT_LOSS", "CAPACITY_ADDITION", "CAPACITY_REDUCTION", "PRODUCT_LAUNCH", "INCORPORATION", "OPERATIONS_START", "OPERATIONS_DISRUPTION", "EXPANSION", "AGREEMENT"],
+      "default_normalized_subtype": "AGREEMENT"
+    },
+    "LEGAL_REGULATORY": {
+      "subevents": ["INVESTIGATION", "ACTION_TAKEN", "COMPLIANCE", "LITIGATION", "REGULATORY_APPROVAL", "DISCLOSURE"],
+      "default_normalized_subtype": "DISCLOSURE"
+    },
+    "INSIDER_TRADING": {
+      "subevents": ["TRADING_WINDOW", "DISCLOSURE", "RELATED_PARTY_TRANSACTION", "INSIDER_ACTIVITY"],
+      "default_normalized_subtype": "DISCLOSURE"
+    },
+    "CREDIT_RATING": {
+      "subevents": ["RATING_UPDATE", "RATING_NEW", "RATING_REVISION"],
+      "default_normalized_subtype": "RATING_UPDATE"
+    },
+    "CORPORATE_ACTION_GENERAL": {
+      "subevents": ["ADDENDUM", "CORRIGENDUM", "RECORD_DATE", "GENERAL_UPDATE"],
+      "default_normalized_subtype": "GENERAL_UPDATE"
+    },
+    "CSR_ESR": {
+      "subevents": ["ESR"],
+      "default_normalized_subtype": "ESR"
+    },
+    "OTHER": {
+      "subevents": ["OTHER"],
+      "default_normalized_subtype": "OTHER"
+    }
+  }
+}

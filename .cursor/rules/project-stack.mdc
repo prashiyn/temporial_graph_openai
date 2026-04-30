@@ -1,0 +1,27 @@
+---
+description: uv toolchain, FastAPI layout, and environment for this repo
+alwaysApply: true
+---
+
+# Project stack
+
+## Package and tooling
+
+- Use **uv** for everything: `uv sync`, `uv add <pkg>`, `uv run <command>`, `uv run pytest`. Do not introduce `pip install` or `requirements.txt` unless the user explicitly asks.
+- Keep dependencies in `pyproject.toml` with a lockfile (`uv.lock`) when the project uses uv’s lock workflow.
+- Prefer `uv run python` / `uv run uvicorn` so the active venv matches the project.
+
+## FastAPI
+
+- Expose HTTP via FastAPI; use Pydantic v2 models for request/response bodies and for agent tool I/O schemas where applicable.
+- Use lifespan hooks for clients that must be shared (graph DB, OpenAI, embedding clients), not module-level globals without cleanup.
+- Return appropriate HTTP status codes; validate inputs at the boundary.
+
+## Secrets and config
+
+- Read API keys and connection strings from environment variables (e.g. `OPENAI_API_KEY`); never commit secrets.
+
+## Reference material in this repo
+
+- Ingestion and graph RAG: `temporal_graph/api`, Neo4j repository, and `temporal_graph/pipeline`.
+- Financial event ontology and extraction constraints: see `canonical_events.md` at the repo root.

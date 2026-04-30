@@ -1,0 +1,64 @@
+# Maps logical roles to LLM providers. doc_processing uses POST /llm/complete with provider + model.
+# For openai_direct, OPENAI_API_KEY is used with the official SDK (AsyncOpenAI).
+#
+# Each role may include "description" (documentation only): use it to pick model/provider/cost tier.
+
+roles:
+  temporal_statement_extraction:
+    description: >-
+      Split each ingest chunk into discrete factual statements (what happened, who, when cues)
+      before temporal typing and triplet extraction. Prefer a capable JSON model; latency scales with chunk size.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-mini
+    reasoning_effort: null
+
+  temporal_date_extraction:
+    description: >-
+      Infer valid_at / invalid_at (or nulls) for one statement from publication context and STATIC vs other temporal types.
+      Short structured JSON; a smaller or faster model is often enough if dates are explicit in text.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-mini
+
+  temporal_triplet_extraction:
+    description: >-
+      Extract subject–predicate–object triplets and entity mentions under the allowed predicate list,
+      plus optional financial_entity_schema-style attributes. Heavier than date extraction; quality affects the graph directly.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-mini
+
+  statement_embedding:
+    description: >-
+      Dense embedding vector for each extracted statement text (similarity search, invalidation candidate matching).
+      Must be an embedding model; dimensions should match doc-processing / graph storage (see embedding_dimensions).
+    backend: doc_processing
+    provider: openai
+    model: text-embedding-3-large
+    embedding_dimensions: 256
+
+  invalidation_agent:
+    description: >-
+      Binary True/False: whether an existing graph fact is invalidated or refined by a newer fact (strict prompt, no extra prose).
+      Called for candidate pairs after embedding and publish-date gates; keep model deterministic and instruction-faithful.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-mini
+
+  retrieval_agent:
+    description: >-
+      Natural-language answers over retrieved graph context (RAG). Balance quality, context length, and cost; user-facing latency matters.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-mini
+
+  predicate_coercion:
+    description: >-
+      Optional / reserved: map free-text or noisy predicate strings to the configured allowlist (normalization).
+      Use a small cheap model if wired; not referenced by the default ingestion path today.
+    backend: doc_processing
+    provider: openai
+    model: gpt-4.1-nano
+
+# Optional: override any role at runtime by exporting LLM_ROLE_OVERRIDES as JSON (advanced).
