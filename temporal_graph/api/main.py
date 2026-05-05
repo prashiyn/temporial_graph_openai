@@ -10,6 +10,10 @@ from temporal_graph.api.collection_routes import router as collection_router
 from temporal_graph.api.ingest_routes import router as ingest_router
 from temporal_graph.api.retrieve_routes import router as retrieve_router
 from temporal_graph.jobs.manager import JobManager, ingest_worker_loop
+from temporal_graph.middleware.collection_wire import (
+    CollectionPathRewriteMiddleware,
+    CollectionWireResponseMiddleware,
+)
 from temporal_graph.neo4j.bootstrap import bootstrap_graph
 from temporal_graph.neo4j.driver import close_driver, get_driver
 from temporal_graph.settings import get_settings
@@ -55,6 +59,10 @@ app = FastAPI(
     description="Neo4j-backed temporal graph ingestion and retrieval (doc-processing LLM proxy).",
     lifespan=lifespan,
 )
+
+# Wire slug ↔ internal `tgo_graph_*`: JSON responses strip prefix; GET path segment is rewritten inbound.
+app.add_middleware(CollectionWireResponseMiddleware)
+app.add_middleware(CollectionPathRewriteMiddleware)
 
 app.include_router(ingest_router)
 app.include_router(retrieve_router)

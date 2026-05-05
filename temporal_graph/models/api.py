@@ -7,6 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from temporal_graph.wiring.collection_ns import normalize_inbound_collection_id
+
 _COLLECTION_ID_PATTERN = r"^[a-z][a-z0-9_]{0,127}$"
 
 
@@ -53,7 +55,7 @@ class IngestPayload(BaseModel):
             raise ValueError(
                 "collection_id must match ^[a-z][a-z0-9_]{0,127}$ (use POST /v1/collections to register names)"
             )
-        return s
+        return normalize_inbound_collection_id(s)
 
     @model_validator(mode="after")
     def _one_doc_and_date(self) -> IngestPayload:
@@ -106,7 +108,7 @@ class RetrievalQuery(BaseModel):
         s = (v or "").strip()
         if not re.fullmatch(_COLLECTION_ID_PATTERN, s):
             raise ValueError("collection_id must match ^[a-z][a-z0-9_]{0,127}$")
-        return s
+        return normalize_inbound_collection_id(s)
 
 
 class RetrievalResponse(BaseModel):
@@ -134,7 +136,7 @@ class CollectionUpsertRequest(BaseModel):
             raise ValueError(
                 "collection_id must match ^[a-z][a-z0-9_]{0,127}$ — provide collection_id explicitly or adjust name"
             )
-        return self.model_copy(update={"collection_id": cid})
+        return self.model_copy(update={"collection_id": normalize_inbound_collection_id(cid)})
 
 
 class CollectionResponse(BaseModel):

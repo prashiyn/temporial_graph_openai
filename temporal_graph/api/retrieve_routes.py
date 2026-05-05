@@ -12,6 +12,7 @@ from temporal_graph.models.api import RetrievalQuery, RetrievalResponse
 from temporal_graph.neo4j.driver import get_driver
 from temporal_graph.neo4j.repository import GraphRepository
 from temporal_graph.settings import get_settings
+from temporal_graph.wiring.collection_ns import wire_collection_id
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ async def retrieve(q: RetrievalQuery) -> RetrievalResponse:
         ctx = await repo.fetch_subgraph_for_doc(q.collection_id, q.doc_id, q.publish_date)
         tool_trace.append({"tool": "fetch_subgraph_for_doc", "result_keys": list(ctx.keys())})
     else:
-        ctx = {"note": f"No doc filter inside collection '{q.collection_id}'."}
+        ctx = {
+            "note": f"No doc filter inside collection '{wire_collection_id(q.collection_id)}'."
+        }
 
     doc_client = DocProcessingClient(settings)
     router_llm = LLMRouter(settings, doc_client)

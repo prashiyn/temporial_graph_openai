@@ -10,6 +10,7 @@ from neo4j import AsyncDriver
 from temporal_graph.models.pipeline import ExtractedTriplet, PipelineEntity, StatementEventPayload
 from temporal_graph.pipeline.entity_enrichment import merge_entity_properties
 from temporal_graph.settings import Settings, get_settings
+from temporal_graph.wiring.collection_ns import conflict_detail_wire
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,9 @@ class GraphRepository:
             row = await check.single()
             if row and str(row["cid"]) != collection_id:
                 raise DocumentCollectionConflictError(
-                    f"Document ({doc_id}, {pd}) already belongs to collection '{row['cid']}', cannot ingest into '{collection_id}'"
+                    conflict_detail_wire(
+                        doc_id, pd, str(row["cid"]), collection_id
+                    )
                 )
             await session.run(
                 q,
@@ -89,7 +92,9 @@ class GraphRepository:
             row = await r.single()
             if row and str(row["cid"]) != collection_id:
                 raise DocumentCollectionConflictError(
-                    f"Document ({doc_id}, {pd}) already belongs to collection '{row['cid']}', cannot ingest into '{collection_id}'"
+                    conflict_detail_wire(
+                        doc_id, pd, str(row["cid"]), collection_id
+                    )
                 )
 
     async def upsert_collection(

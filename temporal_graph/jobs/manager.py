@@ -22,6 +22,7 @@ from temporal_graph.ontology.loader import load_ontology
 from temporal_graph.pipeline.extraction import TemporalIngestionPipeline
 from temporal_graph.predicates import load_predicates
 from temporal_graph.settings import Settings, get_settings
+from temporal_graph.wiring.collection_ns import strip_wire_from_json
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +202,7 @@ class JobManager:
     async def _post_webhook(self, rec: JobRecord) -> None:
         if not rec.webhook_url:
             return
-        body = self.status_model(rec).model_dump(mode="json")
+        body = strip_wire_from_json(self.status_model(rec).model_dump(mode="json"))
         raw = json.dumps(body, default=str).encode()
         headers = {"Content-Type": "application/json"}
         secret = self._settings.job_webhook_signing_secret or ""

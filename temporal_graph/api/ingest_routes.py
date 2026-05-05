@@ -11,6 +11,7 @@ from temporal_graph.neo4j.driver import get_driver
 from temporal_graph.neo4j.repository import DocumentCollectionConflictError, GraphRepository
 from temporal_graph.ontology.loader import list_ontology_ids
 from temporal_graph.settings import get_settings
+from temporal_graph.wiring.collection_ns import strip_wire_from_json
 
 router = APIRouter(prefix="/v1", tags=["ingest"])
 
@@ -70,6 +71,7 @@ async def _job_sse(job_id: str, request: Request) -> Any:
         yield {"event": "error", "data": json.dumps({"detail": "job not found"})}
         return
     async for msg in mgr.iter_sse_events(job_id):
+        msg = strip_wire_from_json(msg)
         payload = json.dumps(msg, default=str)
         yield {"event": msg.get("type", "message"), "data": payload}
 
