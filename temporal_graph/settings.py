@@ -43,13 +43,13 @@ class Settings(BaseSettings):
         default="http://127.0.0.1:8000",
         alias="LLM_SERVICE_BASE_URL",
     )
-    doc_processing_timeout_seconds: float = Field(default=120.0, alias="DOC_PROCESSING_TIMEOUT_SECONDS")
-    doc_processing_connect_timeout_seconds: float = Field(
-        default=10.0, alias="DOC_PROCESSING_CONNECT_TIMEOUT_SECONDS"
+    llm_processing_timeout_seconds: float = Field(default=120.0, alias="LLM_PROCESSING_TIMEOUT_SECONDS")
+    llm_processing_connect_timeout_seconds: float = Field(
+        default=10.0, alias="LLM_PROCESSING_CONNECT_TIMEOUT_SECONDS"
     )
-    doc_processing_max_retries: int = Field(default=3, alias="DOC_PROCESSING_MAX_RETRIES")
-    doc_processing_retry_backoff_seconds: float = Field(
-        default=0.5, alias="DOC_PROCESSING_RETRY_BACKOFF_SECONDS"
+    llm_processing_max_retries: int = Field(default=3, alias="LLM_PROCESSING_MAX_RETRIES")
+    llm_processing_retry_backoff_seconds: float = Field(
+        default=0.5, alias="LLM_PROCESSING_RETRY_BACKOFF_SECONDS"
     )
 
     ingest_max_concurrent_jobs: int = Field(default=2, alias="INGEST_MAX_CONCURRENT_JOBS")

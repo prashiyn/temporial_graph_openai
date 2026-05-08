@@ -25,10 +25,10 @@ class DocProcessingClient:
         self._settings = settings or Settings()
         self._base = self._settings.llm_service_base_url.rstrip("/")
         timeout = httpx.Timeout(
-            connect=self._settings.doc_processing_connect_timeout_seconds,
-            read=self._settings.doc_processing_timeout_seconds,
-            write=self._settings.doc_processing_timeout_seconds,
-            pool=self._settings.doc_processing_connect_timeout_seconds,
+            connect=self._settings.llm_processing_connect_timeout_seconds,
+            read=self._settings.llm_processing_timeout_seconds,
+            write=self._settings.llm_processing_timeout_seconds,
+            pool=self._settings.llm_processing_connect_timeout_seconds,
         )
         self._client = httpx.AsyncClient(base_url=self._base, timeout=timeout)
 
@@ -40,10 +40,10 @@ class DocProcessingClient:
             return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code >= 500
 
         return retry(
-            stop=stop_after_attempt(self._settings.doc_processing_max_retries),
+            stop=stop_after_attempt(self._settings.llm_processing_max_retries),
             wait=wait_exponential(
-                multiplier=self._settings.doc_processing_retry_backoff_seconds,
-                min=self._settings.doc_processing_retry_backoff_seconds,
+                multiplier=self._settings.llm_processing_retry_backoff_seconds,
+                min=self._settings.llm_processing_retry_backoff_seconds,
                 max=30,
             ),
             retry=retry_any(
