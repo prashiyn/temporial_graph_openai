@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Temporal Graph RAG",
-    description="Neo4j-backed temporal graph ingestion and retrieval (doc-processing LLM proxy).",
+    description="Neo4j-backed temporal graph ingestion and retrieval (LLM service proxy).",
     lifespan=lifespan,
 )
 

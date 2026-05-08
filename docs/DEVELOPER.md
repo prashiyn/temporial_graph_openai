@@ -2,7 +2,7 @@
 
 **Other docs:** [Ontology authoring](./ONTOLOGIES.md) · [Documentation index](./README.md)
 
-This repository implements a **temporal knowledge-graph RAG** service: documents are classified under a configurable **ontology**, statements and triplets are extracted via a **doc-processing** LLM proxy, stored in **Neo4j**, and optionally processed through **embedding-based invalidation** with **publish-date proximity** rules. Background ingestion uses **asyncio** jobs with optional **Redis** for multi-worker deployments.
+This repository implements a **temporal knowledge-graph RAG** service: documents are classified under a configurable **ontology**, statements and triplets are extracted via a **LLM service** LLM proxy, stored in **Neo4j**, and optionally processed through **embedding-based invalidation** with **publish-date proximity** rules. Background ingestion uses **asyncio** jobs with optional **Redis** for multi-worker deployments.
 
 ## Tooling
 
@@ -18,8 +18,8 @@ This repository implements a **temporal knowledge-graph RAG** service: documents
 | `temporal_graph/pipeline/` | Ingestion (`TemporalIngestionPipeline`), invalidation, entity enrichment/resolution, LLM response schemas |
 | `temporal_graph/ontology/` | Ontology loader, JSON Schema (`ontology.schema.json`), subtype derivation |
 | `temporal_graph/jobs/` | In-memory or Redis-backed ingest job manager and worker loop |
-| `temporal_graph/llm/` | Router to doc-processing HTTP API (structured JSON completions) |
-| `temporal_graph/doc_processing/` | HTTP client for the external doc-processing service |
+| `temporal_graph/llm/` | Router to LLM service HTTP API (structured JSON completions) |
+| `temporal_graph/doc_processing/` | HTTP client for the external LLM service service |
 | `temporal_graph/models/` | Pydantic models for API, pipeline, and financial entity payloads |
 | `temporal_graph/settings.py` | `pydantic-settings` from environment / `.env` |
 | `ontologies/` | One JSON file per ontology (`{id}.json`); validated on load |
@@ -31,7 +31,7 @@ This repository implements a **temporal knowledge-graph RAG** service: documents
 Copy **`.env.sample`** to **`.env`** and set at least:
 
 - **Neo4j**: `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, optional `NEO4J_DATABASE`
-- **Doc-processing**: `DOC_PROCESSING_BASE_URL` (and timeouts/retries as needed)
+- **LLM service**: `LLM_SERVICE_BASE_URL` (and timeouts/retries as needed)
 - **Paths**: `LLM_CONFIG_PATH`, `ONTOLOGIES_DIR`, `PREDICATES_PATH`, `PREDICATE_GROUPS_PATH` (repo-root-relative paths are resolved automatically)
 - **Invalidation fallback**: `DEFAULT_INVALIDATION_PUBLISH_DATE_THRESHOLD_HOURS` (used when ontology default is `0` or omitted in logic—see ontology docs)
 - **Jobs**: `JOB_BACKEND` (`memory` or `redis`), and if Redis: `REDIS_URL`, `REDIS_JOB_QUEUE_KEY`, `REDIS_JOB_KEY_PREFIX`, `INGEST_START_REDIS_WORKER`
@@ -61,7 +61,7 @@ On startup, the app bootstraps Neo4j constraints/indexes where possible (**`temp
 ## External services
 
 - **Neo4j** — system of record for documents, chunks, statement events, entities, and triplet relationships.
-- **Doc-processing service** — embeddings and structured LLM outputs; configured by URL in settings. The app does not call OpenAI directly for the main ingest path unless a role in `llm_config.yml` is set to a direct provider.
+- **LLM service service** — embeddings and structured LLM outputs; configured by URL in settings. The app does not call OpenAI directly for the main ingest path unless a role in `llm_config.yml` is set to a direct provider.
 
 ## Collections (graph partitions)
 

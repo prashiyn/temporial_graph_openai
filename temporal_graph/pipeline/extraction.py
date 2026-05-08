@@ -24,7 +24,6 @@ from temporal_graph.pipeline.llm_schemas import (
     RawStatement,
     RawStatementList,
     RawTemporalRange,
-    RawTriplet,
 )
 from temporal_graph.settings import Settings
 

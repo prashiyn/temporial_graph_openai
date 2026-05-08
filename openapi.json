@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Temporal Graph RAG",
-    "description": "Neo4j-backed temporal graph ingestion and retrieval (doc-processing LLM proxy).",
+    "description": "Neo4j-backed temporal graph ingestion and retrieval (LLM service proxy).",
     "version": "0.1.0"
   },
   "paths": {

@@ -39,9 +39,9 @@ class Settings(BaseSettings):
         alias="PREDICATE_GROUPS_PATH",
     )
 
-    doc_processing_base_url: str = Field(
+    llm_service_base_url: str = Field(
         default="http://127.0.0.1:8000",
-        alias="DOC_PROCESSING_BASE_URL",
+        alias="LLM_SERVICE_BASE_URL",
     )
     doc_processing_timeout_seconds: float = Field(default=120.0, alias="DOC_PROCESSING_TIMEOUT_SECONDS")
     doc_processing_connect_timeout_seconds: float = Field(

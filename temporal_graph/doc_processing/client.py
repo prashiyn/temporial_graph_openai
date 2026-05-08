@@ -23,7 +23,7 @@ class DocProcessingClient:
 
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or Settings()
-        self._base = self._settings.doc_processing_base_url.rstrip("/")
+        self._base = self._settings.llm_service_base_url.rstrip("/")
         timeout = httpx.Timeout(
             connect=self._settings.doc_processing_connect_timeout_seconds,
             read=self._settings.doc_processing_timeout_seconds,

@@ -1,7 +1,7 @@
 [project]
 name = "temporal-graph-openai"
 version = "0.1.0"
-description = "Temporal graph RAG: FastAPI, Neo4j, doc-processing LLM proxy, configurable ontologies"
+description = "Temporal graph RAG: FastAPI, Neo4j, LLM service proxy, configurable ontologies"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",
