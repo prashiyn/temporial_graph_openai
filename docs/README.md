@@ -12,3 +12,6 @@ Ontology files are validated at load time against `temporal_graph/ontology/ontol
 ```bash
 uv run tg-validate-ontology ontologies/company_data.json
 ```
+# Moved
+
+This service now lives in the [common_rag](https://github.com/prashiyn/common_rag) monorepo under `<service-path>/`.
